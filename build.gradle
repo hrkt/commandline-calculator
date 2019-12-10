@@ -21,6 +21,8 @@ dependencies {
 	implementation group: 'org.jline', name: 'jline', version: '3.13.2'
 	implementation group: 'org.jline', name: 'jline-terminal-jansi', version: '3.13.2'
 
+	testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.14.0'
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
