@@ -1,5 +1,7 @@
 package com.hrkt.commandlinecalculator;
 
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.var;
 
 import java.math.BigDecimal;
@@ -14,8 +16,37 @@ public class DeskCalculator {
     private BigDecimal stack;
     private StringBuilder sb;
 
-    private enum Operator {
-        PLUS, SUBTRACT, MULTIPLY, DIVIDE, NONE
+    enum Operator {
+        PLUS {
+            @Override
+            BigDecimal apply(@NonNull BigDecimal lhs, @NonNull BigDecimal rhs) {
+                return lhs.add(rhs);
+            }
+        },
+        SUBTRACT{
+            @Override
+            BigDecimal apply(@NonNull BigDecimal lhs, @NonNull BigDecimal rhs) {
+                return lhs.subtract(rhs);
+            }
+        }, MULTIPLY {
+            @Override
+            BigDecimal apply(@NonNull BigDecimal lhs, @NonNull BigDecimal rhs) {
+                return lhs.multiply(rhs);
+            }
+        }, DIVIDE {
+            @Override
+            BigDecimal apply(@NonNull BigDecimal lhs, @NonNull BigDecimal rhs) {
+                return lhs.divide(rhs, BigDecimal.ROUND_UNNECESSARY);//;
+            }
+        }, NONE {
+            // allow null for rhs
+            @Override
+            BigDecimal apply(@NonNull BigDecimal lhs, BigDecimal rhs) {
+                return lhs;
+            }
+        };
+
+        abstract BigDecimal apply(BigDecimal lhs, BigDecimal rhs);
     }
     private Operator currentOperator = Operator.NONE;
 
@@ -24,13 +55,16 @@ public class DeskCalculator {
         clearBuffer();
     }
 
-    public synchronized void pushChar(char c) {
+    public synchronized boolean pushChar(char c) {
         if(c == '.' && sb.toString().indexOf('.') < 0) {
             sb.append(c);
+            return true;
         } else if('0' <=c && c <= '9') {
             sb.append(c);
+            return true;
         }
         // do nothing.
+        return false;
     }
 
     public synchronized BigDecimal getCurrentValue() {
@@ -41,38 +75,18 @@ public class DeskCalculator {
     }
 
     public synchronized void pushPlusButton() {
-        stack = stack.add(getCurrentValue());
         currentOperator = Operator.PLUS;
+        stack = currentOperator.apply(stack, getCurrentValue());
         clearBuffer();
     }
 
     public synchronized BigDecimal pushEvalButton() {
         var v = new BigDecimal(sb.toString());
-        switch(currentOperator) {
-            case PLUS: {
-                v = stack.add(getCurrentValue());
-                break;
-            }
-            case SUBTRACT: {
-//                v = stack.subtract(getCurrentValue());
-//                break;
-            }
-            case MULTIPLY: {
-//                v = stack.multiply(getCurrentValue());
-//                break;
-            }
-            case DIVIDE: {
-//                v = stack.divide(getCurrentValue(), BigDecimal.ROUND_UNNECESSARY);//
-//                break;
-                throw new RuntimeException("Not implemented yet.");
-            }
-            case NONE: {
-                return v;
-            }
-            default: {
-                throw new RuntimeException("Not defined.");
-            }
+
+        if(Operator.NONE == currentOperator) {
+            return v;
         }
+        v = currentOperator.apply(stack, getCurrentValue());
         currentOperator = Operator.NONE;
         replaceBuffer(v.toPlainString());
         clearStack();
