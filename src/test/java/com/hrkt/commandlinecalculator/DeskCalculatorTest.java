@@ -1,6 +1,7 @@
 package com.hrkt.commandlinecalculator;
 
 import lombok.val;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,6 +19,32 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DeskCalculatorTest {
     @Test
+    public void operator_plus_success() {
+        assertThat(DeskCalculator.Operator.PLUS.apply(new BigDecimal("24"), new BigDecimal("12"))).isEqualTo(new BigDecimal("36"));
+    }
+
+    @Test
+    public void operator_subtract_success() {
+        assertThat(DeskCalculator.Operator.SUBTRACT.apply(new BigDecimal("24"), new BigDecimal("12"))).isEqualTo(new BigDecimal("12"));
+    }
+
+    @Test
+    public void operator_multiply_success() {
+        assertThat(DeskCalculator.Operator.MULTIPLY.apply(new BigDecimal("24"), new BigDecimal("12"))).isEqualTo(new BigDecimal("288"));
+    }
+
+    @Test
+    public void operator_divide_success() {
+        assertThat(DeskCalculator.Operator.DIVIDE.apply(new BigDecimal("24"), new BigDecimal("12"))).isEqualTo(new BigDecimal("2"));
+    }
+
+    @Test
+    public void operator_none_success() {
+        assertThat(DeskCalculator.Operator.NONE.apply(new BigDecimal("1"), new BigDecimal("2"))).isEqualTo(new BigDecimal("1"));
+        assertThat(DeskCalculator.Operator.NONE.apply(new BigDecimal("1"), null)).isEqualTo(new BigDecimal("1"));
+    }
+
+    @Test
     public void init_success() {
         DeskCalculator dc = new DeskCalculator();
         assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.ZERO);
@@ -32,10 +59,17 @@ class DeskCalculatorTest {
     }
 
     @ParameterizedTest
-    @ValueSource(chars = {'+', '-', '*', '/', 'A', '!', ' '})
+    @ValueSource(chars = {'+', '*', '/', 'A', '!', ' '})
     public void push_single_invalid_char_success(char c) {
         DeskCalculator dc = new DeskCalculator();
         dc.pushChar(c);
+        assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    public void push_single_subtract_char_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('-');
         assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.ZERO);
     }
 
@@ -46,6 +80,7 @@ class DeskCalculatorTest {
         assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.valueOf(1));
         dc.pushChar('2');
         assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.valueOf(12));
+        //assertThat(dc.getCurrentValue().compareTo(BigDecimal.valueOf(12))).isEqualTo(0);
     }
 
     @Test
@@ -53,8 +88,12 @@ class DeskCalculatorTest {
         DeskCalculator dc = new DeskCalculator();
         dc.pushChar('1');
         assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.valueOf(1));
+        assertThat(dc.getCurrentValue()).isEqualTo(new BigDecimal("1"));
+        assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.ONE);
         dc.pushChar('.');
         assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.valueOf(1));
+        assertThat(dc.getCurrentValue()).isEqualTo(new BigDecimal("1"));
+        assertThat(dc.getCurrentValue()).isEqualTo(BigDecimal.ONE);
     }
 
     @Test
@@ -97,7 +136,7 @@ class DeskCalculatorTest {
     }
 
     @Test
-    public void calc_1_plus_2_plu2_3_success() {
+    public void calc_1_plus_2_plus_3_success() {
         DeskCalculator dc = new DeskCalculator();
         dc.pushChar('1');
         dc.pushPlusButton();
@@ -140,5 +179,108 @@ class DeskCalculatorTest {
         dc.pushClearButton();
         val actual = dc.getCurrentValue();
         assertThat(actual).isEqualTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    public void push_eval_button_after_boot_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushEvalButton();
+        val actual = dc.getCurrentValue();
+        assertThat(actual).isEqualTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    public void calc_1_subtract_2_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('1');
+        dc.pushSubtractButton();
+        dc.pushChar('2');
+        dc.pushEvalButton();
+        val actual = dc.pushEvalButton();
+        assertThat(actual).isEqualTo(new BigDecimal(-1));
+    }
+
+    @Test
+    public void enter_minus1_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('-');
+        dc.pushChar('1');
+        dc.pushEvalButton();
+        val actual = dc.pushEvalButton();
+        assertThat(actual).isEqualTo(new BigDecimal(-1));
+    }
+
+    @Test
+    public void enter_minus1_point_2_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('-');
+        dc.pushChar('1');
+        dc.pushChar('.');
+        dc.pushChar('2');
+        dc.pushEvalButton();
+        val actual = dc.pushEvalButton();
+        assertThat(actual).isEqualTo(new BigDecimal("-1.2"));
+    }
+
+    @Test
+    public void calc_24_plus_12_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('2');
+        dc.pushChar('4');
+        dc.pushPlusButton();
+        dc.pushChar('1');
+        dc.pushChar('2');
+        dc.pushEvalButton();
+        val actual = dc.pushEvalButton();
+        assertThat(actual).isEqualTo(new BigDecimal(36));
+    }
+
+    @Test
+    public void calc_24_subtract_12_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('2');
+        dc.pushChar('4');
+        dc.pushSubtractButton();
+        dc.pushChar('1');
+        dc.pushChar('2');
+        dc.pushEvalButton();
+        val actual = dc.pushEvalButton();
+        assertThat(actual).isEqualTo(new BigDecimal(12));
+    }
+
+    @Test
+    public void calc_24_multiply_12_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('2');
+        dc.pushChar('4');
+        dc.pushMultiplyButton();
+        dc.pushChar('1');
+        dc.pushChar('2');
+        dc.pushEvalButton();
+        val actual = dc.pushEvalButton();
+        assertThat(actual).isEqualTo(new BigDecimal(288));
+    }
+
+    @Test
+    public void calc_24_divide_12_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('2');
+        dc.pushChar('4');
+        dc.pushDivideButton();
+        dc.pushChar('1');
+        dc.pushChar('2');
+        dc.pushEvalButton();
+        val actual = dc.pushEvalButton();
+        assertThat(actual).isEqualTo(new BigDecimal(2));
+    }
+
+    @Test
+    public void divide_by_0_fail() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('1');
+        dc.pushDivideButton();
+        dc.pushChar('0');
+
+        Assertions.assertThrows(ArithmeticException.class, () -> dc.pushEvalButton());
     }
 }

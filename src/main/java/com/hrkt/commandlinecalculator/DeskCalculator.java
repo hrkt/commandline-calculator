@@ -1,20 +1,21 @@
 package com.hrkt.commandlinecalculator;
 
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.var;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 /**
  * DeskCalculator
- *
  * see:
  * https://docs.oracle.com/javase/jp/1.3/api/java/math/BigDecimal.html
+ *
  */
 public class DeskCalculator {
     private BigDecimal stack;
     private StringBuilder sb;
+    private boolean needClearBufferInNextInput;
 
     enum Operator {
         PLUS {
@@ -23,22 +24,25 @@ public class DeskCalculator {
                 return lhs.add(rhs);
             }
         },
-        SUBTRACT{
+        SUBTRACT {
             @Override
             BigDecimal apply(@NonNull BigDecimal lhs, @NonNull BigDecimal rhs) {
                 return lhs.subtract(rhs);
             }
-        }, MULTIPLY {
+        },
+        MULTIPLY {
             @Override
             BigDecimal apply(@NonNull BigDecimal lhs, @NonNull BigDecimal rhs) {
                 return lhs.multiply(rhs);
             }
-        }, DIVIDE {
+        },
+        DIVIDE {
             @Override
             BigDecimal apply(@NonNull BigDecimal lhs, @NonNull BigDecimal rhs) {
-                return lhs.divide(rhs, BigDecimal.ROUND_UNNECESSARY);//;
+                return lhs.divide(rhs);//TODO: need rounding mode;
             }
-        }, NONE {
+        },
+        NONE {
             // allow null for rhs
             @Override
             BigDecimal apply(@NonNull BigDecimal lhs, BigDecimal rhs) {
@@ -48,6 +52,7 @@ public class DeskCalculator {
 
         abstract BigDecimal apply(BigDecimal lhs, BigDecimal rhs);
     }
+
     private Operator currentOperator = Operator.NONE;
 
     public DeskCalculator() {
@@ -56,40 +61,70 @@ public class DeskCalculator {
     }
 
     public synchronized boolean pushChar(char c) {
-        if(c == '.' && sb.toString().indexOf('.') < 0) {
+        if(needClearBufferInNextInput) {
+            clearBuffer();
+            needClearBufferInNextInput = false;
+        }
+
+        if ('0' <= c && c <= '9') {
             sb.append(c);
             return true;
-        } else if('0' <=c && c <= '9') {
+        } else if (c == '.' && sb.toString().indexOf('.') < 0) {
+            sb.append(c);
+            return true;
+        } else if (c == '-' && sb.length() == 0) {
             sb.append(c);
             return true;
         }
+
         // do nothing.
         return false;
     }
 
     public synchronized BigDecimal getCurrentValue() {
-        if(0 == sb.length()) {
+        if (0 == sb.length()) {
+            return BigDecimal.ZERO;
+        } else if(1 == sb.length() && '-' == sb.charAt(0)) {
             return BigDecimal.ZERO;
         }
-        return new BigDecimal(sb.toString());
+        return new BigDecimal(sb.toString(), MathContext.UNLIMITED);
     }
 
-    public synchronized void pushPlusButton() {
-        currentOperator = Operator.PLUS;
-        stack = currentOperator.apply(stack, getCurrentValue());
+    public synchronized void pushButtonInternal(Operator pushedOperator) {
+        if(Operator.NONE == currentOperator) {
+            stack = getCurrentValue();
+        } else {
+            stack = pushedOperator.apply(stack, getCurrentValue());
+        }
+        currentOperator = pushedOperator;
         clearBuffer();
     }
 
-    public synchronized BigDecimal pushEvalButton() {
-        var v = new BigDecimal(sb.toString());
+    public synchronized void pushPlusButton() {
+        pushButtonInternal(Operator.PLUS);
+    }
 
-        if(Operator.NONE == currentOperator) {
-            return v;
+    public synchronized void pushSubtractButton() {
+        pushButtonInternal(Operator.SUBTRACT);
+    }
+
+    public synchronized void pushMultiplyButton() {
+        pushButtonInternal(Operator.MULTIPLY);
+    }
+
+    public synchronized void pushDivideButton() {
+        pushButtonInternal(Operator.DIVIDE);
+    }
+
+    public synchronized BigDecimal pushEvalButton() {
+        if (Operator.NONE == currentOperator) {
+            return getCurrentValue();
         }
-        v = currentOperator.apply(stack, getCurrentValue());
+        var v = currentOperator.apply(stack, getCurrentValue());
         currentOperator = Operator.NONE;
         replaceBuffer(v.toPlainString());
         clearStack();
+        needClearBufferInNextInput = true;
         return v;
     }
 
