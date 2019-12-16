@@ -8,6 +8,12 @@ import java.math.MathContext;
 
 /**
  * DeskCalculator
+ *
+ * Note:
+ * <ul>
+ *     <li>When division cause ArithmeticException, this class falls back to use MathContext.DECIMAL128 mode.</li>
+ * </ul>
+ *
  * see:
  * https://docs.oracle.com/javase/jp/1.3/api/java/math/BigDecimal.html
  *
@@ -39,7 +45,12 @@ public class DeskCalculator {
         DIVIDE {
             @Override
             BigDecimal apply(@NonNull BigDecimal lhs, @NonNull BigDecimal rhs) {
-                return lhs.divide(rhs);//TODO: need rounding mode;
+                try {
+                    return lhs.divide(rhs);
+                } catch (ArithmeticException e) {
+                    // fallback to MathContext.DECIMAL128
+                    return lhs.divide(rhs, MathContext.DECIMAL128);
+                }
             }
         },
         NONE {

@@ -283,4 +283,15 @@ class DeskCalculatorTest {
 
         Assertions.assertThrows(ArithmeticException.class, () -> dc.pushEvalButton());
     }
+
+    @Test
+    public void divide_1_by_3_fallback_success() {
+        DeskCalculator dc = new DeskCalculator();
+        dc.pushChar('1');
+        dc.pushDivideButton();
+        dc.pushChar('3');
+        dc.pushEvalButton();
+        val actual = dc.pushEvalButton();
+        assertThat(actual).isEqualTo(new BigDecimal("0.3333333333333333333333333333333333"));
+    }
 }
