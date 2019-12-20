@@ -11,10 +11,10 @@ import java.io.IOException;
 @Slf4j
 public class CommandlineInterface {
     public void run() {
-        log.info("calc is running.");
         DeskCalculator deskCalculator = new DeskCalculator();
 
         try (Terminal terminal = TerminalBuilder.terminal()) {
+            terminal.writer().println("Calculator is running. Press ctrl-c to exit.");
             int ch;
             while ((ch = terminal.reader().read()) != 0x09) {
                 log.debug(String.format("%d, %c", ch, ch));
@@ -54,7 +54,7 @@ public class CommandlineInterface {
                             deskCalculator.pushEvalButton();
                             log.debug(deskCalculator.getCurrentValue().toPlainString());
                             terminal.writer().println();
-                            terminal.writer().print("=" + deskCalculator.getCurrentValue().toPlainString());
+                            terminal.writer().print("=" + deskCalculator.getCurrentValue().stripTrailingZeros().toPlainString());
                             terminal.writer().println();
                             break;
                         }
