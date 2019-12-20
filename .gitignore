@@ -31,3 +31,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+## customize
+
+*.log
+*.tmp
