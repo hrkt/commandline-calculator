@@ -1,5 +1,18 @@
 spring:
   main:
     banner-mode: "off"
+    log-startup-info: true
 
-logging.level.root: WARN
+# logging. line is separated to 2 blocks because..
+# https://github.com/spring-projects/spring-boot/issues/12510:
+# https://github.com/spring-projects/spring-boot/issues/12596:
+
+logging.file: "calc.log"
+logging:
+  level:
+    root: DEBUG
+    org.springframework: DEBUG
+  file: "calc.log"
+    max-size: 1000000
+    #path: "."
+    max-history: 1
