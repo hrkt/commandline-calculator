@@ -1,6 +1,7 @@
 package com.hrkt.commandlinecalculator;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ import java.math.MathContext;
  * https://docs.oracle.com/javase/jp/1.3/api/java/math/BigDecimal.html
  *
  */
+@Slf4j
 public class DeskCalculator {
     private BigDecimal stack;
     private StringBuilder sb;
@@ -49,6 +51,7 @@ public class DeskCalculator {
                     return lhs.divide(rhs);
                 } catch (ArithmeticException e) {
                     // fallback to MathContext.DECIMAL128
+                    log.trace("ArithmeticException occurred:" + e);
                     return lhs.divide(rhs, MathContext.DECIMAL128);
                 }
             }
