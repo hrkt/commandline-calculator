@@ -12,7 +12,7 @@ logging:
   level:
     root: DEBUG
     org.springframework: DEBUG
-  file: "calc.log"
+  file: 
     max-size: 1000000
     #path: "."
     max-history: 1
