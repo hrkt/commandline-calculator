@@ -10,8 +10,8 @@ spring:
 logging.file: "calc.log"
 logging:
   level:
-    root: DEBUG
-    org.springframework: DEBUG
+    root: WARN
+    org.springframework: WARN
   file: 
     max-size: 1000000
     #path: "."

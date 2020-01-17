@@ -12,8 +12,8 @@ public class CommandlineCalculatorApplication {
 	public static void main(String[] args) {
 
 		try (ConfigurableApplicationContext ctx = SpringApplication.run(CommandlineCalculatorApplication.class, args)) {
-			CommandlineInterface cli = ctx.getBean(CommandlineInterface.class);
-			cli.run();
+			CommandlineInterfaceHolder cliHolder = ctx.getBean(CommandlineInterfaceHolder.class);
+			cliHolder.commandlineInterface.run();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
