@@ -15,12 +15,14 @@ dependencies {
     implementation group: 'net.java.dev.jna', name: 'jna', version: '5.5.0'
 
     implementation project(":calculator-shared")
+    implementation (project(":calculator-cli-without-spring")) {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
+    }
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
 }
-
 
 test {
     useJUnitPlatform()

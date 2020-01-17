@@ -3,18 +3,20 @@ package com.hrkt.commandlinecalculator;
 import lombok.extern.slf4j.Slf4j;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.springframework.stereotype.Component;
-
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.io.IOException;
 
-@Component
 @Slf4j
 public class CommandlineInterface {
     public void run() {
         DeskCalculator deskCalculator = new DeskCalculator();
 
         try (Terminal terminal = TerminalBuilder.terminal()) {
-            terminal.writer().println("Calculator is running. Press ctrl-c to exit.");
+            RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            long uptimeInMillis = runtimeMXBean.getUptime();
+            terminal.writer().println(String.format("Calculator is running. Press ctrl-c to exit.(boot in %d msec.)",
+                    uptimeInMillis));
             int ch;
             while ((ch = terminal.reader().read()) != 0x09) {
                 log.debug(String.format("%d, %c", ch, ch));
