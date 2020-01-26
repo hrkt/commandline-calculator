@@ -17,9 +17,11 @@ public class CommandlineInterface {
             long uptimeInMillis = runtimeMXBean.getUptime();
             terminal.writer().println(String.format("Calculator is running. Press ctrl-c to exit.(boot in %d msec.)",
                     uptimeInMillis));
+	    terminal.flush();
             int ch;
             while ((ch = terminal.reader().read()) != 0x09) {
-                log.debug(String.format("%d, %c", ch, ch));
+		//ToDo: java.util.IllegalFormatCodePointException: Code point = 0xfffffffe
+                //log.debug(String.format("%d, %c", (int)ch, ch));
                 // TAB(0x09)で抜ける
                 boolean needPrint = false;
                 try {
@@ -58,12 +60,14 @@ public class CommandlineInterface {
                             terminal.writer().println();
                             terminal.writer().print("=" + deskCalculator.getCurrentValue().stripTrailingZeros().toPlainString());
                             terminal.writer().println();
+	                    terminal.flush();
                             break;
                         }
                         case 8: {
                             // 'Backspace'
                             deskCalculator.pushClearButton();
                             terminal.writer().println();
+	                    terminal.flush();
                             break;
                         }
                         default: {
@@ -72,6 +76,7 @@ public class CommandlineInterface {
                     }
                     if (needPrint) {
                         terminal.writer().print((char) ch);
+	                terminal.flush();
                     }
                 } catch (ArithmeticException e) {
                     showErrorMessage(terminal, e);
@@ -85,5 +90,6 @@ public class CommandlineInterface {
     private void showErrorMessage(Terminal terminal, ArithmeticException e) {
         terminal.writer().println();
         terminal.writer().println("ERROR: " + e.getMessage());
+	terminal.flush();
     }
 }
