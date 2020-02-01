@@ -70,6 +70,9 @@ public class CommandlineInterface {
 	                    terminal.flush();
                             break;
                         }
+                        case 'q': {
+                            System.exit(0);
+                        }
                         default: {
                             needPrint = deskCalculator.pushChar((char) ch);
                         }
